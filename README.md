@@ -2,6 +2,10 @@
 
 On-premises natural-language Oracle query assistant built with FastAPI, NVIDIA NeMo Guardrails, an OpenAI-compatible LLM API, and a lightweight React chat UI.
 
+## Author
+
+Created by young-yeon.
+
 ## What It Does
 
 - Accepts a business question in natural language.
