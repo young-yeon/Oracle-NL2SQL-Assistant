@@ -23,7 +23,7 @@ The archive contains:
 
 - application source
 - built React web files
-- RHEL9 x86_64 RPMs
+- optional RHEL9-compatible x86_64 RPMs for Python build prerequisites
 - Python 3.12 API packagehouse
 - host deployment scripts
 - optional Qdrant image tar
@@ -37,7 +37,8 @@ sudo bash install-oracle-nl2sql-project-rhel9.sh oracle-nl2sql-project-rhel9-x86
 The installer:
 
 - extracts the project to `/opt/oracle-nl2sql-project`
-- installs included RPMs
+- checks Python 3.12 venv/pip support
+- installs only minimal offline build RPMs when source Python packages require them
 - creates `/opt/oracle-nl2sql/.venv`
 - installs Python packages with `pip --no-index`
 - serves API and web from one FastAPI/uvicorn service
@@ -79,6 +80,11 @@ To refresh RPMs from Rocky9 repositories:
 ```bash
 ./deploy/rhel9/scripts/refresh-offline-rpms-wheels.sh
 ```
+
+Do not manually run `dnf install deploy/rhel9/offline/rpms/*.rpm` on the target
+server. The bundle can contain OS dependency RPMs from Rocky repositories, and
+blanket installation can cause protected RHEL packages such as `systemd` to be
+replaced or removed. The installer selects only the small RPM subset it needs.
 
 ## Notes
 

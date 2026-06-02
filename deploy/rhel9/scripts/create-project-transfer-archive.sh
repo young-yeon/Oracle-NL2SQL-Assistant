@@ -13,9 +13,7 @@ ALLOW_INCOMPLETE_PROJECT_ARCHIVE="${ALLOW_INCOMPLETE_PROJECT_ARCHIVE:-0}"
 
 required_paths=(
   "${OFFLINE_DIR}/rpms"
-  "${OFFLINE_DIR}/wheels/host-py312"
   "${OFFLINE_DIR}/wheels/api-py312-linux-amd64/.ready"
-  "${OFFLINE_DIR}/images/qdrant-v1.12.4-linux-amd64.tar"
   "${REPO_ROOT}/apps/web/dist/index.html"
 )
 
@@ -67,8 +65,8 @@ target_os=RHEL9-compatible
 target_arch=${TARGET_ARCH}
 server_python=python3.12
 contains_source=1
-contains_offline_rpms=1
-contains_host_wheels=1
+contains_offline_rpms=$(test -d "${PROJECT_BUNDLE_DIR}/deploy/rhel9/offline/rpms" && echo 1 || echo 0)
+contains_host_wheels=0
 contains_api_wheelhouse=$(test -f "${PROJECT_BUNDLE_DIR}/deploy/rhel9/offline/wheels/api-py312-linux-amd64/.ready" && echo 1 || echo 0)
 contains_base_images=0
 contains_qdrant_image=$(test -f "${PROJECT_BUNDLE_DIR}/deploy/rhel9/offline/images/qdrant-v1.12.4-linux-amd64.tar" && echo 1 || echo 0)

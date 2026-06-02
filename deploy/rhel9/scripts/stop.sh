@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_HOME="${APP_HOME:-/opt/oracle-nl2sql}"
-COMPOSE_FILE="${APP_HOME}/compose.yml"
+SERVICE_NAME="${SERVICE_NAME:-oracle-nl2sql}"
 
-cd "${APP_HOME}"
-PODMAN_IGNORE_CGROUPSV1_WARNING=1 podman-compose -p oracle-nl2sql -f "${COMPOSE_FILE}" down
-
+if [[ "${EUID}" -eq 0 ]]; then
+  systemctl stop "${SERVICE_NAME}"
+else
+  sudo systemctl stop "${SERVICE_NAME}"
+fi

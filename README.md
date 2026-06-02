@@ -110,7 +110,7 @@ On the final server:
 sudo bash install-oracle-nl2sql-project-rhel9.sh oracle-nl2sql-project-rhel9-x86_64.tar.gz
 ```
 
-The server-side installer extracts the project, installs included RPMs and Python packages, creates a host virtualenv, starts a systemd `oracle-nl2sql` service, and runs a smoke test. Container image tar creation is not required for this deployment path.
+The server-side installer extracts the project, checks Python 3.12 venv/pip support, installs only minimal offline build RPMs when source Python packages require them, installs Python packages from the included wheelhouse, creates a host virtualenv, starts a systemd `oracle-nl2sql` service, and runs a smoke test. Container image tar creation is not required for this deployment path.
 
 ## Local API Development
 

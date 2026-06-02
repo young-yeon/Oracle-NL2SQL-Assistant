@@ -16,7 +16,7 @@ Usage:
 Options:
   --install-root PATH   Extract project under PATH. Default: /opt/oracle-nl2sql-project
   --app-home PATH       Install compose/env files under PATH. Default: /opt/oracle-nl2sql
-  --no-start            Build/install only; do not start the Podman stack.
+  --no-start            Build/install only; do not start the systemd service.
   --no-smoke-test       Skip smoke test after start.
   -h, --help            Show this help.
 

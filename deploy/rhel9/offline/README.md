@@ -1,28 +1,22 @@
 # Project-Contained RHEL9 x86_64 Offline Files
 
-This directory is intentionally part of the project. It contains the files that the target RHEL9 x86_64 server needs after only `sudo dnf install python3.12` has been prepared.
+This directory is the local holding area for files that are included in the
+final `dist/oracle-nl2sql-project-rhel9-x86_64.tar.gz` transfer archive.
 
-Included now:
+The GitHub repository tracks only the README files here. RPMs, wheels, image
+tar files, manifests, and checksums are generated or copied locally and are
+ignored by Git.
 
-- `rpms/`: Rocky Linux 9 x86_64/noarch RPMs for Podman, Python 3.12 pip tooling, and runtime prerequisites.
-- `wheels/host-py312/`: Python 3.12 wheels for `podman-compose`.
-- `wheels/api-py312-linux-amd64/`: Python wheels used when building the API image offline.
-- `images/qdrant-v1.12.4-linux-amd64.tar`: Qdrant image tar for offline `podman load`.
+Current host deployment inputs:
 
-Required before creating the full project transfer archive:
+- `wheels/api-py312-linux-amd64/`: Python 3.12 wheelhouse for the FastAPI app.
+- `rpms/`: optional RHEL9-compatible RPMs for `python3.12-pip`,
+  `python3.12-devel`, and compiler prerequisites when source Python packages
+  must be built offline.
+- `images/qdrant-v1.12.4-linux-amd64.tar`: optional Qdrant image tar retained
+  for future vector-store deployment paths.
 
-- `images/python-3.12-linux-amd64.tar`
-- `images/nginx-1.27-alpine-linux-amd64.tar`
-- `apps/web/dist/index.html`
-
-Prepare those on an internet-connected staging machine:
-
-```bash
-./deploy/rhel9/scripts/prepare-offline-build-inputs.sh
-```
-
-The project-specific linux/amd64 API and web image tar is generated on the final x86_64 RHEL9 server after the project archive is extracted:
-
-```bash
-./deploy/rhel9/scripts/build-linux-amd64-images.sh
-```
+Do not install every RPM in `rpms/` on a target server. The host installer
+selects only the minimal package subset it needs. Blanket RPM installation can
+make `dnf` attempt to replace or remove protected OS packages such as
+`systemd`.
