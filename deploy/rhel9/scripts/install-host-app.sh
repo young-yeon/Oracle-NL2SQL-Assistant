@@ -51,6 +51,7 @@ STORAGE_DIR=${STORAGE_DIR}
 WEB_DIST_DIR=${PROJECT_ROOT}/apps/web/dist
 NEMO_CONFIG_PATH=${PROJECT_ROOT}/configs/guardrails
 CORS_ORIGINS=http://localhost:${API_PORT},http://127.0.0.1:${API_PORT}
+HF_HUB_DISABLE_XET=1
 EOF
 
 echo "[app 3/5] Creating Python virtual environment"

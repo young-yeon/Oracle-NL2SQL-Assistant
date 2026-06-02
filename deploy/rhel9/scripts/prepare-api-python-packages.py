@@ -14,6 +14,29 @@ from pathlib import Path
 
 STUB_PACKAGES = {
     "annoy": "1.17.3",
+    "hf-xet": "1.4.3",
+}
+
+STUB_MODULES = {
+    "annoy": (
+        '"""Offline deployment stub for optional NeMo embedding dependency."""\n\n'
+        "class AnnoyIndex:\n"
+        "    def __init__(self, *args, **kwargs):\n"
+        "        raise RuntimeError(\n"
+        '            "The optional annoy native package is not bundled. "\n'
+        '            "This Oracle NL2SQL deployment does not use NeMo KB/embedding indexes. "\n'
+        '            "Install the real annoy wheel if those features are enabled."\n'
+        "        )\n"
+    ),
+    "hf-xet": (
+        '"""Offline deployment stub for optional Hugging Face Xet dependency."""\n\n'
+        '__version__ = "1.4.3"\n\n'
+        "def __getattr__(name):\n"
+        "    raise RuntimeError(\n"
+        '        "The optional hf-xet native package is not bundled. "\n'
+        '        "HF_HUB_DISABLE_XET=1 is set for this offline deployment."\n'
+        "    )\n"
+    ),
 }
 
 
@@ -28,16 +51,7 @@ def create_stub_wheel(fake_dir: Path, name: str, version: str) -> Path:
     wheel_name = f"{normalized}-{version}-py3-none-any.whl"
     wheel_path = fake_dir / wheel_name
     files: dict[str, bytes] = {
-        f"{normalized}/__init__.py": (
-            '"""Offline deployment stub for optional NeMo embedding dependency."""\n\n'
-            "class AnnoyIndex:\n"
-            "    def __init__(self, *args, **kwargs):\n"
-            "        raise RuntimeError(\n"
-            '            "The optional annoy native package is not bundled. "\n'
-            '            "This Oracle NL2SQL deployment does not use NeMo KB/embedding indexes. "\n'
-            '            "Install the real annoy wheel if those features are enabled."\n'
-            "        )\n"
-        ).encode("utf-8"),
+        f"{normalized}/__init__.py": STUB_MODULES[name].encode("utf-8"),
         f"{dist_info}/METADATA": (
             "Metadata-Version: 2.1\n"
             f"Name: {name}\n"
