@@ -2,7 +2,9 @@
 set -euo pipefail
 
 API_BASE="${API_BASE:-http://127.0.0.1:8000}"
-WEB_BASE="${WEB_BASE:-http://127.0.0.1:3000}"
+WEB_BASE="${WEB_BASE:-${API_BASE}}"
+SMOKE_TEST_TIMEOUT_SECONDS="${SMOKE_TEST_TIMEOUT_SECONDS:-90}"
+SMOKE_TEST_RETRY_INTERVAL_SECONDS="${SMOKE_TEST_RETRY_INTERVAL_SECONDS:-2}"
 if [[ -n "${PYTHON_BIN:-}" ]]; then
   :
 elif command -v python3.12 >/dev/null; then
@@ -15,22 +17,42 @@ fi
 "${PYTHON_BIN}" - <<PY
 import json
 import sys
+import time
 import urllib.request
 import uuid
 
 api_base = "${API_BASE}"
 web_base = "${WEB_BASE}"
+timeout_seconds = int("${SMOKE_TEST_TIMEOUT_SECONDS}")
+retry_interval_seconds = float("${SMOKE_TEST_RETRY_INTERVAL_SECONDS}")
 
-def get(url):
-    return urllib.request.urlopen(url, timeout=30).read()
+def get(url, timeout=30):
+    return urllib.request.urlopen(url, timeout=timeout).read()
+
+def wait_for_bytes(url, label):
+    deadline = time.monotonic() + timeout_seconds
+    last_error = None
+    while True:
+        try:
+            return get(url, timeout=5)
+        except Exception as exc:
+            last_error = exc
+            if time.monotonic() >= deadline:
+                raise RuntimeError(
+                    f"{label} did not become ready within {timeout_seconds}s: {last_error}"
+                ) from exc
+            time.sleep(retry_interval_seconds)
+
+def wait_for_json(url, label):
+    return json.loads(wait_for_bytes(url, label).decode("utf-8"))
 
 def post_json(url, payload):
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
     return json.loads(urllib.request.urlopen(req, timeout=30).read().decode("utf-8"))
 
-health = json.loads(get(api_base + "/api/health").decode("utf-8"))
-get(web_base)
+health = wait_for_json(api_base + "/api/health", "API health endpoint")
+wait_for_bytes(web_base, "Web endpoint")
 
 template = get(api_base + "/api/metadata/template")
 boundary = "----oracle-nl2sql-" + uuid.uuid4().hex
