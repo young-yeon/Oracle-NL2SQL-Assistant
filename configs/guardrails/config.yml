@@ -1,0 +1,13 @@
+models:
+  - type: main
+    engine: openai
+    model: "${LLM_MODEL}"
+    parameters:
+      base_url: "${LLM_BASE_URL}"
+      api_key: "${LLM_API_KEY}"
+
+rails:
+  input:
+    flows:
+      - self check input
+

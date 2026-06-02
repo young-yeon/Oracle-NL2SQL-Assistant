@@ -1,0 +1,36 @@
+services:
+  api:
+    image: localhost/oracle-nl2sql-api:0.1.0
+    env_file:
+      - /opt/oracle-nl2sql/.env
+    volumes:
+      - oracle-nl2sql-storage:/app/storage
+      - /opt/oracle/instantclient:/opt/oracle/instantclient:ro
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python3.12", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  web:
+    image: localhost/oracle-nl2sql-web:0.1.0
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+
+  qdrant:
+    image: docker.io/qdrant/qdrant:v1.12.4
+    profiles:
+      - vector
+    volumes:
+      - oracle-nl2sql-qdrant:/qdrant/storage
+    ports:
+      - "6333:6333"
+
+volumes:
+  oracle-nl2sql-storage:
+  oracle-nl2sql-qdrant:

@@ -1,0 +1,39 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - app-storage:/app/storage
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python3.12", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.4
+    profiles:
+      - vector
+    volumes:
+      - qdrant-storage:/qdrant/storage
+    ports:
+      - "6333:6333"
+
+volumes:
+  app-storage:
+  qdrant-storage:
