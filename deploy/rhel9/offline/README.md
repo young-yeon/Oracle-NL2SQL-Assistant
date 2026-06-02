@@ -10,6 +10,10 @@ ignored by Git.
 Current host deployment inputs:
 
 - `wheels/api-py312-linux-amd64/`: Python 3.12 wheelhouse for the FastAPI app.
+  It should contain wheels only, not `.tar.gz` or `.zip` source packages.
+  `annoy` is bundled as a small stub wheel because this app does not use NeMo
+  KB/embedding indexes; install a real native `annoy` wheel only if those
+  features are enabled later.
 - `rpms/`: optional RHEL9-compatible RPMs for `python3.12-pip`,
   `python3.12-devel`, and compiler prerequisites when source Python packages
   must be built offline.

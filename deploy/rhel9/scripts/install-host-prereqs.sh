@@ -11,7 +11,7 @@ ENV_EXAMPLE="${BUNDLE_DIR}/.env.example"
 if [[ ! -f "${ENV_EXAMPLE}" && -f "${BUNDLE_DIR}/../../.env.example" ]]; then
   ENV_EXAMPLE="${BUNDLE_DIR}/../../.env.example"
 fi
-INSTALL_OFFLINE_BUILD_RPMS="${INSTALL_OFFLINE_BUILD_RPMS:-auto}"
+INSTALL_OFFLINE_BUILD_RPMS="${INSTALL_OFFLINE_BUILD_RPMS:-0}"
 
 PIP_RPM_PATTERNS=(
   "python3.12-pip-*.noarch.rpm"
@@ -191,7 +191,9 @@ if source_python_packages_present; then
   elif [[ "${INSTALL_OFFLINE_BUILD_RPMS}" == "0" ]]; then
     cat >&2 <<'EOF'
 The offline Python packagehouse contains source packages, but build tools are
-not available. Install python3.12-devel gcc gcc-c++ make, then rerun.
+not available. Refresh the API wheelhouse so it contains only wheels, or install
+matching RHEL9 python3.12-devel gcc gcc-c++ make packages and rerun with
+INSTALL_OFFLINE_BUILD_RPMS=1.
 EOF
     exit 1
   else

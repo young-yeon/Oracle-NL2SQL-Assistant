@@ -12,7 +12,7 @@ import zipfile
 from pathlib import Path
 
 
-SOURCE_ONLY_PACKAGES = {
+STUB_PACKAGES = {
     "annoy": "1.17.3",
 }
 
@@ -22,17 +22,27 @@ def wheel_record_hash(data: bytes) -> str:
     return "sha256=" + base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
 
 
-def create_fake_wheel(fake_dir: Path, name: str, version: str) -> Path:
+def create_stub_wheel(fake_dir: Path, name: str, version: str) -> Path:
     normalized = name.replace("-", "_")
     dist_info = f"{normalized}-{version}.dist-info"
     wheel_name = f"{normalized}-{version}-py3-none-any.whl"
     wheel_path = fake_dir / wheel_name
     files: dict[str, bytes] = {
+        f"{normalized}/__init__.py": (
+            '"""Offline deployment stub for optional NeMo embedding dependency."""\n\n'
+            "class AnnoyIndex:\n"
+            "    def __init__(self, *args, **kwargs):\n"
+            "        raise RuntimeError(\n"
+            '            "The optional annoy native package is not bundled. "\n'
+            '            "This Oracle NL2SQL deployment does not use NeMo KB/embedding indexes. "\n'
+            '            "Install the real annoy wheel if those features are enabled."\n'
+            "        )\n"
+        ).encode("utf-8"),
         f"{dist_info}/METADATA": (
             "Metadata-Version: 2.1\n"
             f"Name: {name}\n"
             f"Version: {version}\n"
-            "Summary: Temporary resolver-only wheel; do not deploy.\n"
+            "Summary: Offline stub for optional NeMo embedding dependency.\n"
         ).encode("utf-8"),
         f"{dist_info}/WHEEL": (
             "Wheel-Version: 1.0\n"
@@ -95,9 +105,9 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory(prefix="oracle-nl2sql-fake-wheels-") as temp:
         fake_dir = Path(temp)
-        fake_wheels = [
-            create_fake_wheel(fake_dir, name, version)
-            for name, version in SOURCE_ONLY_PACKAGES.items()
+        stub_wheels = [
+            create_stub_wheel(fake_dir, name, version)
+            for name, version in STUB_PACKAGES.items()
         ]
         run(
             [
@@ -128,26 +138,13 @@ def main() -> int:
             env,
         )
 
-        for fake_wheel in fake_wheels:
-            copied = package_dir / fake_wheel.name
-            if copied.exists():
-                copied.unlink()
+        for stub_wheel in stub_wheels:
+            shutil.copy2(stub_wheel, package_dir / stub_wheel.name)
 
-    for name, version in SOURCE_ONLY_PACKAGES.items():
-        run(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "download",
-                "--dest",
-                str(package_dir),
-                "--no-deps",
-                "--no-binary=:all:",
-                f"{name}=={version}",
-            ],
-            env,
-        )
+    for source_package in package_dir.glob("*.tar.gz"):
+        source_package.unlink()
+    for source_package in package_dir.glob("*.zip"):
+        source_package.unlink()
 
     run(
         [
