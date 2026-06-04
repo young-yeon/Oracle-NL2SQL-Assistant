@@ -63,11 +63,15 @@ class LLMService:
             "analysis": analysis,
             "metadata_matches": matches,
             "catalog": catalog.to_prompt(),
+            "oracle_sql_version": self.settings.oracle_sql_version,
             "rules": [
                 "Return Oracle SQL only in the sql field.",
+                f"Target Oracle Database version is {self.settings.oracle_sql_version}.",
                 "Use only tables and columns present in the catalog.",
                 "Use SELECT or WITH SELECT only.",
                 "Do not include semicolons, comments, DDL, DML, PL/SQL, or SELECT FOR UPDATE.",
+                "For Oracle 11g compatibility, do not use FETCH FIRST, OFFSET/FETCH, or LIMIT.",
+                "For row limiting, use ROWNUM in a subquery when needed.",
                 "Prefer explicit column names over SELECT *.",
             ],
         }
@@ -77,6 +81,7 @@ class LLMService:
                     "role": "system",
                     "content": (
                         "You generate safe read-only Oracle SQL from business metadata. "
+                        f"Use Oracle Database {self.settings.oracle_sql_version} compatible syntax. "
                         "Return JSON only with keys: sql, explanation, warnings."
                     ),
                 },

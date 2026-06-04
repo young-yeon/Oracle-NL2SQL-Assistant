@@ -22,6 +22,10 @@ class SqlSafetyValidator:
         r"\b(insert|update|delete|merge|drop|alter|create|truncate|grant|revoke|commit|rollback|execute|exec|call|begin|declare)\b",
         re.IGNORECASE,
     )
+    ORACLE_11G_UNSUPPORTED_ROW_LIMIT_PATTERN = re.compile(
+        r"\b(fetch\s+(first|next)|offset\s+\d+\s+rows?|limit\s+\d+)\b",
+        re.IGNORECASE,
+    )
 
     def __init__(self, max_rows: int):
         self.max_rows = max_rows
@@ -43,6 +47,9 @@ class SqlSafetyValidator:
         normalized_sql = raw_sql.rstrip(";").strip()
         if ";" in normalized_sql:
             errors.append("Multiple SQL statements are not allowed.")
+
+        if self.ORACLE_11G_UNSUPPORTED_ROW_LIMIT_PATTERN.search(normalized_sql):
+            errors.append("Oracle 11g does not support FETCH FIRST, OFFSET/FETCH, or LIMIT. Use ROWNUM instead.")
 
         try:
             parsed_statements = sqlglot.parse(normalized_sql, read="oracle")
@@ -99,4 +106,3 @@ class SqlSafetyValidator:
         if re.search(r"\b(fetch\s+first|rownum)\b", sql, flags=re.IGNORECASE):
             return sql
         return f"SELECT * FROM (\n{sql}\n) WHERE ROWNUM <= {self.max_rows}"
-

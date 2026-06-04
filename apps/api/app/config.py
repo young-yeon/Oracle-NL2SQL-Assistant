@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     oracle_current_schema: str | None = Field(default=None, alias="ORACLE_CURRENT_SCHEMA")
     oracle_mode: str = Field(default="thin", alias="ORACLE_MODE")
     oracle_client_lib_dir: str | None = Field(default=None, alias="ORACLE_CLIENT_LIB_DIR")
+    oracle_sql_version: str = Field(default="11g", alias="ORACLE_SQL_VERSION")
 
     sql_max_rows: int = Field(default=100, ge=1, le=5000, alias="SQL_MAX_ROWS")
     sql_timeout_seconds: int = Field(default=30, ge=1, le=600, alias="SQL_TIMEOUT_SECONDS")
